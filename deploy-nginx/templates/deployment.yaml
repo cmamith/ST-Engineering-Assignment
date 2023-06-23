@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "deploy-nginx.fullname" . }}
+  labels:
+    app: {{ include "deploy-nginx.name" . }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{ include "deploy-nginx.name" . }}
+  template:
+    metadata:
+      labels:
+        {{- include "deploy-nginx.name" . }}
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 80
+            - name: https
+              containerPort: 443
+          {{- if .Values.security.enableHttps }}
+          volumeMounts:
+            - name: tls-certs
+              mountPath: /etc/nginx/ssl
+              readOnly: true
+          {{- end }}
+      {{- if .Values.security.enableHttps }}
+      spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 80
+            - name: https
+              containerPort: 443
+          {{- if .Values.security.enableHttps }}
+          volumeMounts:
+            - name: tls-certs
+              mountPath: /etc/nginx/ssl
+              readOnly: true
+          {{- end }}
+      {{- if .Values.security.enableHttps }}
+      volumes:
+        - name: tls-certs
+          {{- if .Values.security.selfSignedCert.enabled }}
+          secret:
+            secretName: {{ .Values.security.selfSignedCert.secretName }}
+          {{- else }}
+          secret:
+            secretName: {{ .Values.security.tlsSecretName }}
+          {{- end }}
+      {{- end }}

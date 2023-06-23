@@ -1,0 +1,32 @@
+replicaCount: 1
+
+image:
+  repository: nginx
+  pullPolicy: Always
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: stable
+
+
+security:
+  enableHttps: false
+  selfSignedCert:
+    enabled: false
+    secretName: nginx-tls-secret
+    commonName: nginx.example.com
+
+service:
+  type: NodePort
+  httpPort: 80
+  httpsPort: 443
+  nodePort: 30080
+
+
+ingress:
+  enabled: false
+  annotations: {}
+  hosts:
+    - host: chart-example.local
+      paths: []
+  tls: []
+
+
